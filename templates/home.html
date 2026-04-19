@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}SnapClass AI — Home{% endblock %}
+{% block body_class %}bg-primary{% endblock %}
+
+{% block content %}
+<div class="home-wrap">
+    <div class="home-header">
+        <img src="https://i.ibb.co/YTYGn5qV/logo.png" height="90" alt="SnapClass">
+        <h1>SNAP<br>CLASS</h1>
+    </div>
+
+    <div class="home-cards">
+        <div class="portal-card" onclick="window.location='/student'">
+            <img src="https://i.ibb.co/844D9Lrt/mascot-student.png" width="110" alt="Student">
+            <h2>I'm Student</h2>
+            <button class="btn-primary">Student Portal →</button>
+        </div>
+        <div class="portal-card" onclick="window.location='/teacher'">
+            <img src="https://i.ibb.co/CsmQQV6X/mascot-prof.png" width="130" alt="Teacher">
+            <h2>I'm Teacher</h2>
+            <button class="btn-primary">Teacher Portal →</button>
+        </div>
+    </div>
+
+    <div class="home-footer">
+        Built by <span>Afsha Ahmed</span> 🚀
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,483 @@
+@import url('https://fonts.googleapis.com/css2?family=Climate+Crisis:YEAR@1979&family=Outfit:wght@300;400;600;700;800&display=swap');
+
+:root {
+    --primary:      #5865F2;
+    --primary-dark: #4752C4;
+    --secondary:    #EB459E;
+    --bg-light:     #E0E3FF;
+    --text-dark:    #1e293b;
+    --text-muted:   #64748b;
+    --border:       #e5e7eb;
+    --success:      #22c55e;
+    --error:        #ef4444;
+    --warning:      #f97316;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-dark);
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+h1, h2 { font-family: 'Climate Crisis', sans-serif; line-height: 1.05; }
+
+/* ── Backgrounds ── */
+.bg-primary   { background: var(--primary); }
+.bg-dashboard { background: var(--bg-light); }
+
+/* ── Home ── */
+.home-wrap {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 40px;
+}
+
+.home-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.home-header h1 {
+    color: #E0E3FF;
+    font-size: 3.5rem;
+    text-align: center;
+}
+
+.home-cards {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.portal-card {
+    background: #E0E3FF;
+    border-radius: 2rem;
+    padding: 40px 48px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.25s, box-shadow 0.25s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.portal-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+}
+
+.portal-card h2 {
+    font-family: 'Climate Crisis', sans-serif;
+    color: var(--primary);
+    font-size: 1.8rem;
+}
+
+/* ── Auth ── */
+.auth-wrap {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 24px;
+}
+
+.auth-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 520px;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 2rem;
+    padding: 40px;
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 8px 40px rgba(88,101,242,0.12);
+}
+
+.auth-card h3 {
+    font-family: 'Climate Crisis', sans-serif;
+    font-size: 1.6rem;
+    color: var(--primary);
+    text-align: center;
+}
+
+/* ── Dashboard ── */
+.dashboard-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 24px 60px;
+}
+
+.dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.dash-user {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.dash-subheader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.logo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-row h2 {
+    font-family: 'Climate Crisis', sans-serif;
+    color: var(--primary);
+    font-size: 1.8rem;
+}
+
+/* ── Tabs ── */
+.tab-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    padding: 10px 24px;
+    border-radius: 100px;
+    border: none;
+    background: white;
+    color: var(--text-dark);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+.tab-btn.active, .tab-btn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.tab-panel { display: block; }
+.tab-panel.hidden { display: none; }
+
+/* ── Method tabs ── */
+.method-tabs {
+    display: flex;
+    gap: 10px;
+    margin: 16px 0;
+}
+
+.method-btn {
+    padding: 8px 20px;
+    border-radius: 100px;
+    border: 2px solid var(--primary);
+    background: white;
+    color: var(--primary);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.method-btn.active, .method-btn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* ── Buttons ── */
+.btn-primary, .btn-secondary, .btn-tertiary {
+    padding: 12px 28px;
+    border-radius: 100px;
+    border: none;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary   { background: var(--primary);   color: white; }
+.btn-secondary { background: var(--secondary); color: white; }
+.btn-tertiary  { background: #1e293b;           color: white; }
+
+.btn-primary:hover, .btn-secondary:hover, .btn-tertiary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+}
+
+.btn-primary:disabled, .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.full-width { width: 100%; justify-content: center; }
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* ── Inputs ── */
+.input-field {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+    background: white;
+}
+
+.input-field:focus { border-color: var(--primary); }
+
+select.input-field { cursor: pointer; }
+
+.row-split { display: flex; gap: 12px; align-items: flex-end; }
+
+/* ── Camera ── */
+.camera-wrap {
+    border-radius: 20px;
+    overflow: hidden;
+    background: #000;
+    width: 100%;
+    max-height: 320px;
+}
+
+.camera-wrap video {
+    width: 100%;
+    display: block;
+    max-height: 320px;
+    object-fit: cover;
+}
+
+/* ── Upload ── */
+.upload-area {
+    border: 3px dashed var(--primary);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    background: white;
+    transition: background 0.2s;
+    margin-bottom: 16px;
+}
+
+.upload-area:hover { background: #f0f4ff; }
+
+.photo-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.gallery-img {
+    width: 120px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+}
+
+/* ── Subject Cards ── */
+.subjects-grid, #subjectsList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.subject-card {
+    background: white;
+    border-left: 6px solid var(--secondary);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.subject-info h4 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    color: var(--text-dark);
+}
+
+.stats-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+.pill {
+    background: #E0E3FF;
+    color: var(--primary);
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.pill-danger { background: #fef2f2; color: var(--error); }
+
+.badge {
+    background: var(--bg-light);
+    color: var(--primary);
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+/* ── Results Table ── */
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+.results-table th {
+    background: var(--primary);
+    color: white;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 700;
+}
+
+.results-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.results-table .present { color: #16a34a; font-weight: 700; }
+.results-table .absent  { color: var(--error); font-weight: 700; }
+
+.records-wrap { background: white; border-radius: 16px; padding: 16px; }
+
+/* ── Alerts ── */
+.alert {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.alert-error   { background: #fef2f2; color: #dc2626; border-left: 4px solid #ef4444; }
+.alert-success { background: #f0fdf4; color: #16a34a; border-left: 4px solid #22c55e; }
+.alert-info    { background: #eff6ff; color: #2563eb; border-left: 4px solid #3b82f6; }
+.alert-warning { background: #fff7ed; color: #c2410c; border-left: 4px solid #f97316; }
+
+.hidden { display: none !important; }
+
+/* ── Modal ── */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal-card {
+    background: white;
+    border-radius: 24px;
+    padding: 36px;
+    max-width: 560px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+.modal-card h4 {
+    font-family: 'Climate Crisis', sans-serif;
+    font-size: 1.4rem;
+    color: var(--primary);
+}
+
+.code-block {
+    display: block;
+    background: #f8faff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    word-break: break-all;
+}
+
+/* ── Card ── */
+.card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+/* ── Footer ── */
+.home-footer {
+    text-align: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: 20px;
+}
+
+.bg-dashboard .home-footer { color: var(--primary); }
+.home-footer span { color: var(--secondary); }
+
+.text-muted { color: var(--text-muted); font-size: 0.9rem; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+::selection { background: var(--primary); color: white; }
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+    .home-cards { flex-direction: column; }
+    .portal-card { padding: 28px 32px; }
+    .auth-header { flex-direction: column; gap: 12px; }
+    .dash-header { flex-direction: column; }
+    .tab-bar { gap: 8px; }
+    .tab-btn { padding: 8px 14px; font-size: 0.85rem; }
+    .subject-card { flex-direction: column; }
+    .dashboard-wrap { padding: 16px 16px 60px; }
+}

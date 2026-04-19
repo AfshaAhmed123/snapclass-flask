@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Student Login — SnapClass{% endblock %}
+{% block body_class %}bg-dashboard{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="auth-header">
+        <div class="logo-row">
+            <img src="https://i.ibb.co/YTYGn5qV/logo.png" height="70" alt="SnapClass">
+            <h2>SNAP<br>CLASS</h2>
+        </div>
+        <a href="/" class="btn-secondary">← Back to Home</a>
+    </div>
+
+    <div class="auth-card" id="mainCard">
+        <h3>Login using FaceID</h3>
+        <p class="text-muted">Position your face in the center of the camera</p>
+
+        <div class="camera-wrap">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" style="display:none"></canvas>
+        </div>
+
+        <div id="scanStatus" class="alert hidden"></div>
+
+        <button class="btn-primary full-width" onclick="captureAndScan()">📸 Scan My Face</button>
+    </div>
+
+    <!-- Registration panel (shown when face not recognized) -->
+    <div class="auth-card hidden" id="registerCard">
+        <h3>Register New Profile</h3>
+        <div id="regError" class="alert alert-error hidden"></div>
+        <input type="text" id="newName" placeholder="Your full name e.g. Afsha Ahmed" class="input-field">
+        <p class="text-muted">Optional: Record your voice for voice attendance</p>
+        <div id="voiceSection">
+            <button class="btn-secondary full-width" id="recordBtn" onclick="toggleRecording()">🎙️ Record Voice Sample</button>
+            <p id="recordStatus" class="text-muted" style="display:none">Recording... speak: "I am present, my name is Afsha"</p>
+        </div>
+        <div class="btn-row" style="margin-top:16px">
+            <button class="btn-primary" onclick="doRegister()">✅ Create Account</button>
+            <button class="btn-secondary" onclick="backToScan()">← Back</button>
+        </div>
+    </div>
+
+    <div class="home-footer">Built by <span>Afsha Ahmed</span> 🚀</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let stream, mediaRecorder, audioChunks = [], audioBlob = null, capturedPhotoBlob = null, isRecording = false;
+
+// Start camera
+async function startCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
+        document.getElementById('video').srcObject = stream;
+    } catch(e) {
+        showStatus('Camera access denied. Please allow camera access.', 'error');
+    }
+}
+
+function captureAndScan() {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+
+    canvas.toBlob(async blob => {
+        capturedPhotoBlob = blob;
+        showStatus('🔍 AI is scanning your face...', 'info');
+
+        const fd = new FormData();
+        fd.append('photo', blob, 'face.jpg');
+
+        const res = await fetch('/api/student/face-login', {method:'POST', body: fd});
+        const data = await res.json();
+
+        if (data.success) {
+            showStatus(`✅ Welcome back, ${data.name}!`, 'success');
+            setTimeout(() => window.location = '/student/dashboard', 1200);
+        } else if (data.new_student) {
+            showStatus('Face not recognized. Please register!', 'warning');
+            setTimeout(showRegisterCard, 1000);
+        } else {
+            showStatus(data.message || 'Scan failed. Try again.', 'error');
+        }
+    }, 'image/jpeg', 0.9);
+}
+
+function showRegisterCard() {
+    document.getElementById('mainCard').classList.add('hidden');
+    document.getElementById('registerCard').classList.remove('hidden');
+}
+
+function backToScan() {
+    document.getElementById('registerCard').classList.add('hidden');
+    document.getElementById('mainCard').classList.remove('hidden');
+}
+
+async function toggleRecording() {
+    if (!isRecording) {
+        const s = await navigator.mediaDevices.getUserMedia({audio: true});
+        mediaRecorder = new MediaRecorder(s);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => { audioBlob = new Blob(audioChunks, {type:'audio/wav'}); };
+        mediaRecorder.start();
+        isRecording = true;
+        document.getElementById('recordBtn').textContent = '⏹ Stop Recording';
+        document.getElementById('recordStatus').style.display = 'block';
+    } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        document.getElementById('recordBtn').textContent = '✅ Voice Recorded!';
+        document.getElementById('recordStatus').style.display = 'none';
+    }
+}
+
+async function doRegister() {
+    const name = document.getElementById('newName').value.trim();
+    const errEl = document.getElementById('regError');
+    if (!name) { errEl.textContent = 'Please enter your name'; errEl.classList.remove('hidden'); return; }
+    if (!capturedPhotoBlob) { errEl.textContent = 'No photo captured'; errEl.classList.remove('hidden'); return; }
+
+    const fd = new FormData();
+    fd.append('name', name);
+    fd.append('photo', capturedPhotoBlob, 'face.jpg');
+    if (audioBlob) fd.append('audio', audioBlob, 'voice.wav');
+
+    errEl.classList.add('hidden');
+    const btn = event.target;
+    btn.textContent = '⏳ Creating profile...';
+    btn.disabled = true;
+
+    const res = await fetch('/api/student/register', {method:'POST', body: fd});
+    const data = await res.json();
+
+    if (data.success) {
+        showStatus(`🎉 Welcome, ${data.name}! Redirecting...`, 'success');
+        setTimeout(() => window.location = '/student/dashboard', 1500);
+    } else {
+        errEl.textContent = data.message || 'Registration failed';
+        errEl.classList.remove('hidden');
+        btn.textContent = '✅ Create Account';
+        btn.disabled = false;
+    }
+}
+
+function showStatus(msg, type) {
+    const el = document.getElementById('scanStatus');
+    el.textContent = msg;
+    el.className = `alert alert-${type}`;
+    el.classList.remove('hidden');
+}
+
+startCamera();
+</script>
+{% endblock %}

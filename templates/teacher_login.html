@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Teacher Login — SnapClass{% endblock %}
+{% block body_class %}bg-dashboard{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="auth-header">
+        <div class="logo-row">
+            <img src="https://i.ibb.co/YTYGn5qV/logo.png" height="70" alt="SnapClass">
+            <h2>SNAP<br>CLASS</h2>
+        </div>
+        <a href="/" class="btn-secondary">← Back to Home</a>
+    </div>
+
+    <!-- Login Form -->
+    <div id="loginForm" class="auth-card">
+        <h3>Login to Teacher Portal</h3>
+        <div id="loginError" class="alert alert-error hidden"></div>
+        <input type="text" id="loginUsername" placeholder="Username e.g. afsha123" class="input-field">
+        <input type="password" id="loginPassword" placeholder="Password" class="input-field">
+        <div class="btn-row">
+            <button class="btn-primary" onclick="doTeacherLogin()">🔑 Login</button>
+            <button class="btn-secondary" onclick="toggleForm()">Register Instead →</button>
+        </div>
+    </div>
+
+    <!-- Register Form -->
+    <div id="registerForm" class="auth-card hidden">
+        <h3>Create Teacher Account</h3>
+        <div id="registerError" class="alert alert-error hidden"></div>
+        <div id="registerSuccess" class="alert alert-success hidden"></div>
+        <input type="text" id="regUsername" placeholder="Username e.g. afsha123" class="input-field">
+        <input type="text" id="regName" placeholder="Full Name e.g. Afsha Ahmed" class="input-field">
+        <input type="password" id="regPassword" placeholder="Password" class="input-field">
+        <input type="password" id="regConfirm" placeholder="Confirm Password" class="input-field">
+        <div class="btn-row">
+            <button class="btn-primary" onclick="doTeacherRegister()">✅ Register Now</button>
+            <button class="btn-secondary" onclick="toggleForm()">← Login Instead</button>
+        </div>
+    </div>
+
+    <div class="home-footer">Built by <span>Afsha Ahmed</span> 🚀</div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleForm() {
+    document.getElementById('loginForm').classList.toggle('hidden');
+    document.getElementById('registerForm').classList.toggle('hidden');
+}
+
+async function doTeacherLogin() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errEl = document.getElementById('loginError');
+    errEl.classList.add('hidden');
+
+    const res = await fetch('/api/teacher/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username, password})
+    });
+    const data = await res.json();
+    if (data.success) {
+        window.location = '/teacher/dashboard';
+    } else {
+        errEl.textContent = data.message || 'Login failed';
+        errEl.classList.remove('hidden');
+    }
+}
+
+async function doTeacherRegister() {
+    const username = document.getElementById('regUsername').value.trim();
+    const name     = document.getElementById('regName').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const confirm  = document.getElementById('regConfirm').value;
+    const errEl    = document.getElementById('registerError');
+    const sucEl    = document.getElementById('registerSuccess');
+    errEl.classList.add('hidden');
+    sucEl.classList.add('hidden');
+
+    const res = await fetch('/api/teacher/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username, name, password, confirm})
+    });
+    const data = await res.json();
+    if (data.success) {
+        sucEl.textContent = data.message;
+        sucEl.classList.remove('hidden');
+        setTimeout(toggleForm, 2000);
+    } else {
+        errEl.textContent = data.message;
+        errEl.classList.remove('hidden');
+    }
+}
+
+document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key === 'Enter') {
+        if (!document.getElementById('loginForm').classList.contains('hidden')) doTeacherLogin();
+        else doTeacherRegister();
+    }
+});
+</script>
+{% endblock %}

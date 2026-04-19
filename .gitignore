@@ -1,0 +1,25 @@
+# Environment variables — NEVER push this!
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vercel (not needed anymore)
+vercel.json
+
+# Egg info
+*.egg-info/
+dist/
+build/

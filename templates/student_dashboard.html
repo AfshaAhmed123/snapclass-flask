@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard — SnapClass{% endblock %}
+{% block body_class %}bg-dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrap">
+    <div class="dash-header">
+        <div class="logo-row">
+            <img src="https://i.ibb.co/YTYGn5qV/logo.png" height="60" alt="SnapClass">
+            <h2>SNAP<br>CLASS</h2>
+        </div>
+        <div class="dash-user">
+            <span>Welcome, <strong>{{ student.name }}</strong></span>
+            <a href="/logout" class="btn-secondary">Logout</a>
+        </div>
+    </div>
+
+    <div class="dash-subheader">
+        <h3>Your Enrolled Subjects</h3>
+        <button class="btn-primary" onclick="showEnrollModal()">+ Enroll in Subject</button>
+    </div>
+
+    <!-- Enroll Modal -->
+    <div id="enrollModal" class="modal hidden">
+        <div class="modal-card">
+            <h4>Enroll in Subject</h4>
+            <p class="text-muted">Enter the subject code provided by your teacher</p>
+            <input type="text" id="joinCode" placeholder="e.g. CS101" class="input-field">
+            <div id="enrollMsg" class="alert hidden"></div>
+            <div class="btn-row">
+                <button class="btn-tertiary" onclick="document.getElementById('enrollModal').classList.add('hidden')">Cancel</button>
+                <button class="btn-primary" onclick="doEnroll()">Enroll Now</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="subjects-grid">
+        {% for node in subjects %}
+        {% set sub = node.subjects %}
+        {% set sid = sub.subject_id %}
+        {% set stat = stats_map.get(sid, {'total': 0, 'attended': 0}) %}
+        {% set pct = ((stat.attended / stat.total * 100) | round(1)) if stat.total > 0 else 0 %}
+        <div class="subject-card">
+            <div class="subject-info">
+                <h4>{{ sub.name }}</h4>
+                <p>Code: <span class="badge">{{ sub.subject_code }}</span> &nbsp;|&nbsp; Section: {{ sub.section }}</p>
+                <div class="stats-pills">
+                    <span class="pill">📅 {{ stat.total }} Classes</span>
+                    <span class="pill">✅ {{ stat.attended }} Attended</span>
+                    <span class="pill {% if pct < 75 %}pill-danger{% endif %}">📊 {{ pct }}%</span>
+                </div>
+                {% if pct < 75 %}
+                <div class="alert alert-error" style="margin-top:8px;padding:8px 12px;font-size:0.85rem">
+                    ⚠️ Low attendance! Minimum 75% required.
+                </div>
+                {% endif %}
+            </div>
+            <button class="btn-tertiary" onclick="doUnenroll('{{ sid }}', '{{ sub.name }}')">🗑 Unenroll</button>
+        </div>
+        {% else %}
+        <div class="alert alert-info">No subjects enrolled yet. Use a subject code from your teacher to join!</div>
+        {% endfor %}
+    </div>
+
+    <div class="home-footer">Built by <span>Afsha Ahmed</span> 🚀</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showEnrollModal() {
+    document.getElementById('enrollModal').classList.remove('hidden');
+}
+
+async function doEnroll() {
+    const code = document.getElementById('joinCode').value.trim().toUpperCase();
+    const msgEl = document.getElementById('enrollMsg');
+    msgEl.classList.add('hidden');
+
+    const res = await fetch('/api/student/enroll', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({code})
+    });
+    const data = await res.json();
+    msgEl.textContent = data.success ? `✅ Enrolled in ${data.subject_name}!` : data.message;
+    msgEl.className = `alert alert-${data.success ? 'success' : 'error'}`;
+    msgEl.classList.remove('hidden');
+    if (data.success) setTimeout(() => location.reload(), 1500);
+}
+
+async function doUnenroll(subjectId, name) {
+    if (!confirm(`Unenroll from ${name}?`)) return;
+    await fetch('/api/student/unenroll', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({subject_id: subjectId})
+    });
+    location.reload();
+}
+</script>
+{% endblock %}

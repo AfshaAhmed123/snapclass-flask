@@ -1,0 +1,14 @@
+flask
+gunicorn
+supabase
+bcrypt
+numpy
+pillow
+scikit-learn
+dlib-bin
+git+https://github.com/ageitgey/face_recognition_models
+setuptools<70.0.0
+librosa
+resemblyzer
+segno
+python-dotenv

@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+{% block title %}Teacher Dashboard — SnapClass{% endblock %}
+{% block body_class %}bg-dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrap">
+
+    <!-- Header -->
+    <div class="dash-header">
+        <div class="logo-row">
+            <img src="https://i.ibb.co/YTYGn5qV/logo.png" height="60" alt="SnapClass">
+            <h2>SNAP<br>CLASS</h2>
+        </div>
+        <div class="dash-user">
+            <span>Welcome, <strong>{{ teacher.name }}</strong></span>
+            <a href="/logout" class="btn-secondary">Logout</a>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('attendance', this)">📸 Take Attendance</button>
+        <button class="tab-btn" onclick="switchTab('subjects', this)">📚 Manage Subjects</button>
+        <button class="tab-btn" onclick="switchTab('records', this)">📋 Records</button>
+    </div>
+
+    <!-- Tab: Take Attendance -->
+    <div id="tab-attendance" class="tab-panel">
+        <h3>Take AI Attendance</h3>
+        <div class="row-split">
+            <select id="subjectSelect" class="input-field" style="flex:1">
+                {% for s in subjects %}
+                <option value="{{ s.subject_id }}" data-name="{{ s.name }}">{{ s.name }} — {{ s.subject_code }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="method-tabs">
+            <button class="method-btn active" onclick="switchMethod('face', this)">📸 Face Analysis</button>
+            <button class="method-btn" onclick="switchMethod('voice', this)">🎙️ Voice Attendance</button>
+        </div>
+        <div id="method-face">
+            <div class="upload-area" id="dropZone" onclick="document.getElementById('photoInput').click()">
+                <p>📷 Click to upload class photos or drag & drop</p>
+                <input type="file" id="photoInput" multiple accept="image/*" style="display:none" onchange="addPhotos(this.files)">
+            </div>
+            <div id="photoGallery" class="photo-gallery"></div>
+            <div class="btn-row">
+                <button class="btn-tertiary" onclick="clearPhotos()" id="clearBtn" disabled>🗑 Clear All</button>
+                <button class="btn-secondary" onclick="runFaceAnalysis()" id="analyzeBtn" disabled>🔍 Run Face Analysis</button>
+            </div>
+        </div>
+        <div id="method-voice" style="display:none">
+            <div class="card">
+                <p>Record audio of students saying "I am present". AI will identify each voice.</p>
+                <button class="btn-primary full-width" id="voiceRecordBtn" onclick="toggleVoiceRecording()">🎙️ Start Recording</button>
+                <p id="voiceStatus" class="text-muted" style="display:none">🔴 Recording... students say "I am present"</p>
+                <button class="btn-secondary full-width" id="analyzeVoiceBtn" onclick="runVoiceAnalysis()" style="margin-top:12px;display:none">Analyze Audio</button>
+            </div>
+        </div>
+        <div id="attendanceResults" class="hidden" style="margin-top:24px">
+            <h4>Attendance Results</h4>
+            <p class="text-muted">Review before confirming. Absent students' parents will be notified.</p>
+            <table class="results-table" id="resultsTable">
+                <thead><tr><th>Name</th><th>Status</th></tr></thead>
+                <tbody></tbody>
+            </table>
+            <div id="emailAlerts" class="hidden" style="margin-top:12px"></div>
+            <div class="btn-row" style="margin-top:16px">
+                <button class="btn-tertiary" onclick="discardResults()">Discard</button>
+                <button class="btn-primary" onclick="confirmAttendance()">✅ Confirm & Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Manage Subjects -->
+    <div id="tab-subjects" class="tab-panel hidden">
+        <div class="dash-subheader">
+            <h3>Manage Subjects</h3>
+            <button class="btn-primary" onclick="showCreateSubject()">+ Create New Subject</button>
+        </div>
+        <div id="createSubjectModal" class="modal hidden">
+            <div class="modal-card">
+                <h4>Create New Subject</h4>
+                <input type="text" id="newSubCode" placeholder="Subject Code e.g. CS101" class="input-field">
+                <input type="text" id="newSubName" placeholder="Subject Name" class="input-field">
+                <input type="text" id="newSubSection" placeholder="Section e.g. A" class="input-field">
+                <div id="createSubError" class="alert alert-error hidden"></div>
+                <div class="btn-row">
+                    <button class="btn-tertiary" onclick="closeCreateSubject()">Cancel</button>
+                    <button class="btn-primary" onclick="createSubject()">Create</button>
+                </div>
+            </div>
+        </div>
+        <div id="subjectsList">
+            {% for s in subjects %}
+            <div class="subject-card">
+                <div class="subject-info">
+                    <h4>{{ s.name }}</h4>
+                    <p>Code: <span class="badge">{{ s.subject_code }}</span> &nbsp;|&nbsp; Section: {{ s.section }}</p>
+                    <div class="stats-pills">
+                        <span class="pill">🫂 {{ s.total_students }} Students</span>
+                        <span class="pill">🕰️ {{ s.total_classes }} Classes</span>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;flex-direction:column">
+                    <button class="btn-secondary" onclick="showQR('{{ s.subject_id }}')">🔗 Share Code</button>
+                    <button class="btn-tertiary" onclick="deleteSubject('{{ s.subject_id }}', '{{ s.name }}')">🗑 Delete</button>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info">No subjects yet. Create one above!</div>
+            {% endfor %}
+        </div>
+        <div id="qrModal" class="modal hidden">
+            <div class="modal-card">
+                <h4 id="qrSubjectName">Share Class</h4>
+                <div style="display:flex;gap:24px;flex-wrap:wrap;">
+                    <div>
+                        <p><strong>Copy Link</strong></p>
+                        <code id="qrLink" class="code-block"></code>
+                        <code id="qrCode" class="code-block" style="margin-top:8px"></code>
+                        <p class="text-muted">Share via WhatsApp or Email</p>
+                    </div>
+                    <div>
+                        <p><strong>Scan QR Code</strong></p>
+                        <img id="qrImage" src="" alt="QR Code" style="width:160px;border-radius:12px;">
+                    </div>
+                </div>
+                <button class="btn-tertiary full-width" onclick="document.getElementById('qrModal').classList.add('hidden')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Records -->
+    <div id="tab-records" class="tab-panel hidden">
+        <h3>Attendance Records</h3>
+        <div id="recordsTable" class="records-wrap">
+            <p class="text-muted">Loading records...</p>
+        </div>
+    </div>
+
+    <div class="home-footer">Built by <span>Afsha Ahmed</span> 🚀</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let pendingLogs = [], pendingResults = [], voiceBlob = null, voiceRecorder = null, isVoiceRecording = false;
+let addedPhotos = [];
+
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.remove('hidden');
+    btn.classList.add('active');
+    if (name === 'records') loadRecords();
+}
+
+function switchMethod(name, btn) {
+    document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('method-face').style.display = name === 'face' ? 'block' : 'none';
+    document.getElementById('method-voice').style.display = name === 'voice' ? 'block' : 'none';
+}
+
+function addPhotos(files) {
+    for (const f of files) {
+        addedPhotos.push(f);
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'gallery-img';
+            document.getElementById('photoGallery').appendChild(img);
+        };
+        reader.readAsDataURL(f);
+    }
+    document.getElementById('clearBtn').disabled = false;
+    document.getElementById('analyzeBtn').disabled = false;
+}
+
+function clearPhotos() {
+    addedPhotos = [];
+    document.getElementById('photoGallery').innerHTML = '';
+    document.getElementById('clearBtn').disabled = true;
+    document.getElementById('analyzeBtn').disabled = true;
+    document.getElementById('attendanceResults').classList.add('hidden');
+}
+
+async function runFaceAnalysis() {
+    const subjectId = document.getElementById('subjectSelect').value;
+    const btn = document.getElementById('analyzeBtn');
+    btn.textContent = '⏳ Scanning...';
+    btn.disabled = true;
+    const fd = new FormData();
+    fd.append('subject_id', subjectId);
+    addedPhotos.forEach(f => fd.append('photos', f));
+    const res = await fetch('/api/attendance/face', {method:'POST', body: fd});
+    const data = await res.json();
+    btn.textContent = '🔍 Run Face Analysis';
+    btn.disabled = false;
+    if (data.success) showResults(data.results, data.logs);
+    else alert(data.message || 'Analysis failed');
+}
+
+async function toggleVoiceRecording() {
+    if (!isVoiceRecording) {
+        const s = await navigator.mediaDevices.getUserMedia({audio: true});
+        voiceRecorder = new MediaRecorder(s);
+        const chunks = [];
+        voiceRecorder.ondataavailable = e => chunks.push(e.data);
+        voiceRecorder.onstop = () => {
+            voiceBlob = new Blob(chunks, {type:'audio/wav'});
+            document.getElementById('analyzeVoiceBtn').style.display = 'block';
+        };
+        voiceRecorder.start();
+        isVoiceRecording = true;
+        document.getElementById('voiceRecordBtn').textContent = '⏹ Stop Recording';
+        document.getElementById('voiceStatus').style.display = 'block';
+    } else {
+        voiceRecorder.stop();
+        isVoiceRecording = false;
+        document.getElementById('voiceRecordBtn').textContent = '✅ Recording Saved';
+        document.getElementById('voiceStatus').style.display = 'none';
+    }
+}
+
+async function runVoiceAnalysis() {
+    if (!voiceBlob) return alert('No audio recorded');
+    const subjectId = document.getElementById('subjectSelect').value;
+    const fd = new FormData();
+    fd.append('subject_id', subjectId);
+    fd.append('audio', voiceBlob, 'audio.wav');
+    document.getElementById('analyzeVoiceBtn').textContent = '⏳ Analyzing...';
+    const res = await fetch('/api/attendance/voice', {method:'POST', body: fd});
+    const data = await res.json();
+    document.getElementById('analyzeVoiceBtn').textContent = 'Analyze Audio';
+    if (data.success) showResults(data.results, data.logs);
+    else alert(data.message || 'Voice analysis failed');
+}
+
+function showResults(results, logs) {
+    pendingResults = results;
+    pendingLogs = logs;
+    const tbody = document.querySelector('#resultsTable tbody');
+    tbody.innerHTML = '';
+    results.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.name}</td><td class="${r.status === 'present' ? 'present' : 'absent'}">${r.status === 'present' ? '✅ Present' : '❌ Absent'}</td>`;
+        tbody.appendChild(tr);
+    });
+    document.getElementById('attendanceResults').classList.remove('hidden');
+}
+
+function discardResults() {
+    pendingLogs = []; pendingResults = [];
+    document.getElementById('attendanceResults').classList.add('hidden');
+    clearPhotos();
+}
+
+async function confirmAttendance() {
+    const subjectName = document.getElementById('subjectSelect').selectedOptions[0]?.dataset.name || 'the subject';
+    const logsWithNames = pendingLogs.map((log, i) => ({...log, student_name: pendingResults[i]?.name}));
+    const res = await fetch('/api/attendance/confirm', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({logs: logsWithNames, subject_name: subjectName})
+    });
+    const data = await res.json();
+    if (data.success) {
+        const alerts = data.email_alerts || [];
+        const alertsEl = document.getElementById('emailAlerts');
+        if (alerts.length) {
+            alertsEl.innerHTML = '<p><strong>📧 Parent Email Alerts:</strong></p>' +
+                alerts.map(a => `<p class="text-muted">• ${a.demo ? '[DEMO] ' : '✅ Sent → '}${a.to || a.message}</p>`).join('');
+            alertsEl.classList.remove('hidden');
+        }
+        setTimeout(() => { discardResults(); location.reload(); }, 3000);
+    }
+}
+
+function showCreateSubject() { document.getElementById('createSubjectModal').classList.remove('hidden'); }
+function closeCreateSubject() { document.getElementById('createSubjectModal').classList.add('hidden'); }
+
+async function createSubject() {
+    const code = document.getElementById('newSubCode').value.trim();
+    const name = document.getElementById('newSubName').value.trim();
+    const section = document.getElementById('newSubSection').value.trim();
+    const errEl = document.getElementById('createSubError');
+    errEl.classList.add('hidden');
+    const res = await fetch('/api/subjects/create', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({code, name, section})
+    });
+    const data = await res.json();
+    if (data.success) { closeCreateSubject(); location.reload(); }
+    else { errEl.textContent = data.message; errEl.classList.remove('hidden'); }
+}
+
+async function showQR(subjectId) {
+    const res = await fetch(`/api/subjects/${subjectId}/qr`);
+    const data = await res.json();
+    document.getElementById('qrSubjectName').textContent = data.name;
+    document.getElementById('qrLink').textContent = data.url;
+    document.getElementById('qrCode').textContent = data.code;
+    document.getElementById('qrImage').src = `data:image/png;base64,${data.qr}`;
+    document.getElementById('qrModal').classList.remove('hidden');
+}
+
+async function deleteSubject(subjectId, name) {
+    if (!confirm(`Delete "${name}"? This will also delete all attendance records for this subject!`)) return;
+    const res = await fetch('/api/subjects/delete', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({subject_id: subjectId})
+    });
+    const data = await res.json();
+    if (data.success) {
+        alert(`"${name}" deleted successfully!`);
+        location.reload();
+    } else {
+        alert('Delete failed: ' + (data.message || 'Unknown error'));
+    }
+}
+
+async function loadRecords() {
+    const res = await fetch('/api/attendance/records');
+    const data = await res.json();
+    const wrap = document.getElementById('recordsTable');
+    if (!data.length) { wrap.innerHTML = '<p class="text-muted">No records yet.</p>'; return; }
+    const rows = data.map(r => `<tr><td>${r.time}</td><td>${r.subject}</td><td>${r.subject_code}</td><td>${r.is_present ? '✅ Present' : '❌ Absent'}</td></tr>`).join('');
+    wrap.innerHTML = `<table class="results-table"><thead><tr><th>Time</th><th>Subject</th><th>Code</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = '#5865F2'; });
+dz.addEventListener('drop', e => { e.preventDefault(); addPhotos(e.dataTransfer.files); dz.style.borderColor = ''; });
+</script>
+{% endblock %}
